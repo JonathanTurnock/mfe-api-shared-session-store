@@ -52,10 +52,10 @@ const signedSessionId = `s:${sign(req.sessionID, config.sessionCookieSecret)}`;
 This code signs the session ID from the request with our secret, creating a secure token that the client can use to authenticate with the API.
 
 ### Middleware for Session Validation
-Before the API processes any request, we must ensure that a valid session exists. We've created a middleware called `withPortalSession` for this purpose.
+Before the API processes any request, we must ensure that a valid session exists. We've created a middleware called `withSession` for this purpose.
 
 ```javascript
-const withPortalSession = (req, res, next) => {
+const withSession = (req, res, next) => {
   if (req.session.username) {
     next();
   } else {
@@ -85,11 +85,17 @@ app.use((req, res, next) => {
 
 ```javascript
 axios.get("http://localhost:3001/api", {
-  headers: getPortalHeaders(req)
+  headers: getSessionHeaders(req)
 });
 ```
 
 3. **API Server Validates Session**: The API server receives the request, validates the session using the middleware, and responds with data.
+
+```javascript
+app.use("/api", withSession, (req, res) => {
+    res.send({ status: "OK", views: req.session.views });
+});
+```
 
 ### Dockerizing the Environment
 For convenience, we've dockerized our MongoDB setup. Here's a snippet of the `docker-compose.yml` configuration:
